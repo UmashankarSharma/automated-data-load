@@ -1,0 +1,25 @@
+{
+  "name": "cpqosvcintegration",
+  "version": "1.0.0",
+  "description": "API used for CPQ OSvC Integration.",
+  "main": "server.js",
+  "oracleMobile": {
+    "dependencies": {
+      "apis": {},
+      "connectors": {}
+    }
+  },
+  "dependencies": {
+    "async": "^2.6.1",
+    "body-parser": "^1.18.3",
+    "csv-parse": "^3.1.3",
+    "csv-writer": "^1.2.0",
+    "express": "^4.16.4",
+    "express-http-context": "^1.0.3",
+    "fast-csv": "^2.4.1",
+    "querystring": "^0.2.0",
+    "request": "^2.88.0",
+    "request-promise": "^4.2.2",
+    "underscore": "^1.9.1"
+  }
+}
