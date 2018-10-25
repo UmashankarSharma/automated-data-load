@@ -3,7 +3,8 @@ var loadcsv = require('./test.js');
 var async = require('async');
 var createCsvWriter = require('csv-writer').createObjectCsvWriter;
 const path = require('path');
-const testFolder = path.join(__dirname,'../../','inbox');
+const inboxFolder = path.join(__dirname,'../../','inbox');
+const outboxFolder = path.join(__dirname,'../../','outbox');
 
 exports.automate_data_load =function (req,res) {
     const csvWriter = createCsvWriter({
@@ -18,7 +19,7 @@ exports.automate_data_load =function (req,res) {
         object_id : req.params.object_id,
         user : req.params.user
     }
-    const file__full_location = testFolder+"/"+reqParams.file_location;
+    const file__full_location = inboxFolder+"/"+reqParams.file_location;
     var records =[];
     console.log("parent file_location:-"+file__full_location);
     var items = fs.readdirSync(file__full_location);
@@ -47,6 +48,33 @@ exports.automate_data_load =function (req,res) {
         },
         function(err){
             console.log("Final Complete :"+items);
+
+            var dir = path.join(outboxFolder,'/',reqParams.file_location);
+
+            if (!fs.existsSync(outboxFolder)){
+                fs.mkdirSync(outboxFolder);
+            }
+            if (!fs.existsSync(dir)){
+                fs.mkdirSync(dir);
+            }
+            async.each(items, function (file, callback) {
+                var oldPath = path.join(inboxFolder,reqParams.file_location,file);
+                var newPath = path.join(outboxFolder,reqParams.file_location,file);
+
+                fs.rename(oldPath, newPath, function (err) {
+                    if (err) throw err
+                    console.log('Successfully Moved:--'+file+" from -"+oldPath+" to ->"+newPath)
+                    callback()
+                })
+            },
+            function (err) {
+                if (err) {
+                    console.log("File transfer failed");
+                } else {
+                    console.log("File transfer Success");
+                }
+            });
+
             csvWriter.writeRecords(records)       // returns a promise
                 .then(() => {
                 console.log('Finaly written and Done');
