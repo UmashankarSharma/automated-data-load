@@ -10,14 +10,12 @@ var separateReqPool = {maxSockets: 10};
 var start_time = new Date();
 var end_time;
 var fs = require("fs");
+var createCsvWriter = require('csv-writer').createObjectCsvWriter;
 
 exports.upload_document = function (req, res) {
 
     var object_id = req.params.object_id;
     var file_location = req.params.file_location;
-
-    var createCsvWriter = require('csv-writer').createObjectCsvWriter;
-
 
     console.log("Start The Loading at : " + start_time);
     async.series([
@@ -25,8 +23,15 @@ exports.upload_document = function (req, res) {
                 this_file.get_csv_data(file_location,callback);
             },
             function (callback) {
-                async.each(csv_arr, function(csv_arr_val, callback){
-                        this_file.callDatabase(csv_arr_val, object_id, callback);
+                async.each(csv_arr, function(csv_arr_val, callback1){
+                        this_file.callDatabase(csv_arr_val, object_id, callback1);
+                    }, function(err) {
+                        if( err ) {
+                            console.log('A file failed to process');
+                        } else {
+                            console.log('All files have been processed successfully');
+                            callback();
+                        }
                     }
                 );
             }
@@ -56,7 +61,7 @@ exports.callDatabase = function (val, object_id, callback) {
     request(options, function (error, response, body) {
         if (error) throw new Error(error);
         console.log(body);
-        callback(body);
+        callback();
     });
 }
 
