@@ -28,9 +28,9 @@ exports.upload_document = function (req, res) {
             });
         })
         .on("end", function () {
-            res.status(200).send({
+            /*res.status(200).send({
                 "STATUS": "200"
-            });
+            });*/
         })
         .on("error", function (error) {
             res.status(400).send({

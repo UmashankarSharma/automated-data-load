@@ -22,7 +22,11 @@ app.use(bodyParser.json({
 app.get('/load-data/:object_id/upload/:file_location',function(req, res) {
         var projects = require('./filehandler/test.js');
         projects.upload_document(req,res);
-    });
+});
+app.get('/automate-data-load',function(req, res) {
+    var auto_process = require('./filehandler/automate_process.js');
+    auto_process.automate_data_load(req,res);
+});
 
 /**********************************************************
  *  Create the NodeJS Server.
