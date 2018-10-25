@@ -5,22 +5,31 @@ var createCsvWriter = require('csv-writer').createObjectCsvWriter;
 const path = require('path');
 const inboxFolder = path.join(__dirname,'../../','inbox');
 const outboxFolder = path.join(__dirname,'../../','outbox');
+const processedFolder = path.join(__dirname,'../../','processed');
 var start_time = new Date();
 
 exports.automate_data_load =function (req,res) {
     console.log("Start The Loading at : " + start_time);
-    const csvWriter = createCsvWriter({
-        path: 'file.csv',
-        header: [
-            {id: 'file_location', title: 'File Location'},
-            {id: 'logs', title: 'Logs'}
-        ]
-    });
     var reqParams = {
         file_location: req.params.file_location,
         object_id : req.params.object_id,
         user : req.params.user
     }
+    var dirP = path.join(processedFolder,'/',reqParams.file_location);
+
+    if (!fs.existsSync(processedFolder)){
+        fs.mkdirSync(processedFolder);
+    }
+    if (!fs.existsSync(dirP)){
+        fs.mkdirSync(dirP);
+    }
+    const csvWriter = createCsvWriter({
+        path: path.join(dirP,reqParams.file_location+'.csv'),
+        header: [
+            {id: 'file_location', title: 'File Location'},
+            {id: 'logs', title: 'Logs'}
+        ]
+    });
     const file__full_location = inboxFolder+"/"+reqParams.file_location;
     var records =[];
     console.log("parent file_location:-"+file__full_location);
