@@ -5,8 +5,10 @@ var createCsvWriter = require('csv-writer').createObjectCsvWriter;
 const path = require('path');
 const inboxFolder = path.join(__dirname,'../../','inbox');
 const outboxFolder = path.join(__dirname,'../../','outbox');
+var start_time = new Date();
 
 exports.automate_data_load =function (req,res) {
+    console.log("Start The Loading at : " + start_time);
     const csvWriter = createCsvWriter({
         path: 'file.csv',
         header: [
@@ -24,9 +26,6 @@ exports.automate_data_load =function (req,res) {
     console.log("parent file_location:-"+file__full_location);
     var items = fs.readdirSync(file__full_location);
     async.each(items, function(item, callback){
-        //req.params.object_id = "Collection";
-        //req.params.file_location = testFolder+"/"+parentItem+"/"+item;
-        //var file_location = testFolder+"/"+parentItem+"/"+item;
         var csv_arr =[];
         async.series([
                 function (callback) {
@@ -84,6 +83,7 @@ exports.automate_data_load =function (req,res) {
                     "error": err
                 });
             } else {
+                console.log("Ending The process at : " + new Date());
                 res.status(200).send({
                     "document_id": "OK"
                 });

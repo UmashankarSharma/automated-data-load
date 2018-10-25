@@ -1,54 +1,43 @@
 var csv = require("fast-csv");
 var request = require("request");
 var async = require('async');
-var test1 = require('./test1.js');
-var csv_arr = [];
-var csv_arr_res = [];
 var _ = require("underscore");
 var this_file = require('./test.js');
 var separateReqPool = {maxSockets: 10};
-var start_time = new Date();
-var end_time;
-var fs = require("fs");
-var createCsvWriter = require('csv-writer').createObjectCsvWriter;
 
 exports.upload_document = function (reqParams, csv_arr,records, callback) {
-
     const object_id = reqParams.object_id;
-
-    console.log("Start The Loading at : " + start_time);
     async.series([
-            function (callback) {
-                async.each(csv_arr, function(csv_arr_val, callback1){
-                    let record ={};
-                    record.file_location = reqParams.file_location;
-                    this_file.callDatabase(csv_arr_val, object_id, function (body) {
-                        record.logs = body;
-                        records.push(record);
-                        callback1();
-                    });
-                }, function(err) {
-                    if( err ) {
-                        console.log('A file failed to process');
-                        callback(err);
-                    } else {
-                        console.log('All files have been processed successfully');
-                        callback();
-                    }
+        function (callback) {
+            async.each(csv_arr, function(csv_arr_val, callback1){
+                let record ={};
+                record.file_location = reqParams.file_location;
+                callDatabase(csv_arr_val, object_id, function (body) {
+                    record.logs = body;
+                    records.push(record);
+                    callback1();
+                });
+            }, function(err) {
+                if( err ) {
+                    console.log('A file failed to process');
+                    callback(err);
+                } else {
+                    console.log('All files have been processed successfully');
+                    callback();
                 }
-                );
-            }
-        ],
+            });
+        }],
         function (err) {
             if (err) {
                 callback(err);
             } else {
                 callback();
             }
-        });
+        }
+    );
 }
 
-exports.callDatabase = function (val, object_id, callback) {
+function callDatabase(val, object_id, callback) {
     var options = {
         method: 'POST',
         url: 'https://ngpsservice--tst2.custhelp.com/cc/webservice/callfm/' + object_id + '/' + val,
