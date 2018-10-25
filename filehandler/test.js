@@ -20,22 +20,27 @@ exports.upload_document = function (req, res) {
 
 
     console.log("Start The Loading at : " + start_time);
-    //get ticket
-    var csvstream = csv.fromPath('./' + file_location, {headers: true})
-        .on("data", function (row) {
-            this_file.callDatabase(Object.values(row), object_id, function (res) {
-                console.log(res);
-            });
-        })
-        .on("end", function () {
-            /*res.status(200).send({
-                "STATUS": "200"
-            });*/
-        })
-        .on("error", function (error) {
-            res.status(400).send({
-                "error": error
-            });
+    async.series([
+            function (callback) {
+                this_file.get_csv_data(file_location,callback);
+            },
+            function (callback) {
+                async.each(csv_arr, function(csv_arr_val, callback){
+                        this_file.callDatabase(csv_arr_val, object_id, callback);
+                    }
+                );
+            }
+        ],
+        function (err) {
+            if (err) {
+                res.status(400).send({
+                    "error": err
+                });
+            } else {
+                res.status(200).send({
+                    "document_id": "OK"
+                });
+            }
         });
 }
 
@@ -50,6 +55,21 @@ exports.callDatabase = function (val, object_id, callback) {
 
     request(options, function (error, response, body) {
         if (error) throw new Error(error);
+        console.log(body);
         callback(body);
     });
+}
+
+exports.get_csv_data = function (file_location, callback) {
+    var csvstream = csv.fromPath('./' + file_location, {headers: true})
+        .on("data", function (row) {
+            csv_arr.push(Object.values(row));
+        })
+        .on("end", function () {
+            console.log("We are in End Function");
+            callback();
+        })
+        .on("error", function (error) {
+            callback(error);
+        });
 }
