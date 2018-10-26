@@ -1,28 +1,102 @@
-var fs = require('fs')
-const testFolder = './inbox';
+var fs = require('fs');
 var loadcsv = require('./test.js');
-var async = require('async')
+var async = require('async');
+var createCsvWriter = require('csv-writer').createObjectCsvWriter;
+const path = require('path');
+const inboxFolder = path.join(__dirname,'../../','inbox');
+const outboxFolder = path.join(__dirname,'../../','outbox');
+const processedFolder = path.join(__dirname,'../../','processed');
+var start_time = new Date();
 
 exports.automate_data_load =function (req,res) {
-    fs.readdirSync(testFolder).forEach(file => {
-        console.log("parent:-"+file);
-    var items = fs.readdirSync(testFolder+"/"+file);
+    console.log("Start The Loading at : " + start_time);
+    var reqParams = {
+        file_location: req.params.file_location,
+        object_id : req.params.object_id,
+        user : req.params.user
+    }
+    var dirP = path.join(processedFolder,'/',reqParams.file_location);
+
+    if (!fs.existsSync(processedFolder)){
+        fs.mkdirSync(processedFolder);
+    }
+    if (!fs.existsSync(dirP)){
+        fs.mkdirSync(dirP);
+    }
+    const csvWriter = createCsvWriter({
+        path: path.join(dirP,reqParams.file_location+'.csv'),
+        header: [
+            {id: 'file_location', title: 'File Location'},
+            {id: 'logs', title: 'Logs'}
+        ]
+    });
+    const file__full_location = inboxFolder+"/"+reqParams.file_location;
+    var records =[];
+    console.log("parent file_location:-"+file__full_location);
+    var items = fs.readdirSync(file__full_location);
     async.each(items, function(item, callback){
-            console.log("child:-"+item);
-            req.params.object_id = "Collection";
-            req.params.file_location = testFolder+"/"+file+"/"+item;
-            loadcsv.upload_document(req,res);
-            callback();
+        var csv_arr =[];
+        async.series([
+                function (callback) {
+                    console.log("Getting CSV content of :--"+file__full_location+"/"+item)
+                    loadcsv.get_csv_data(file__full_location+"/"+item, csv_arr, callback)
+                },
+                function (callback) {
+                    console.log("Starting uploading CSV --"+csv_arr)
+                    loadcsv.upload_document(reqParams,csv_arr, records, callback);
+                }
+            ],
+            function (err) {
+                if (err) {
+                    callback(err);
+                } else {
+                    callback();
+                }
+            });
         },
         function(err){
-            console.log("All Completes :");
+            console.log("Final Complete :"+items);
+
+            var dir = path.join(outboxFolder,'/',reqParams.file_location);
+
+            if (!fs.existsSync(outboxFolder)){
+                fs.mkdirSync(outboxFolder);
+            }
+            if (!fs.existsSync(dir)){
+                fs.mkdirSync(dir);
+            }
+            async.each(items, function (file, callback) {
+                var oldPath = path.join(inboxFolder,reqParams.file_location,file);
+                var newPath = path.join(outboxFolder,reqParams.file_location,file);
+
+                fs.rename(oldPath, newPath, function (err) {
+                    if (err) throw err
+                    console.log('Successfully Moved:--'+file+" from -"+oldPath+" to ->"+newPath)
+                    callback()
+                })
+            },
+            function (err) {
+                if (err) {
+                    console.log("File transfer failed");
+                } else {
+                    console.log("File transfer Success");
+                }
+            });
+
+            csvWriter.writeRecords(records)       // returns a promise
+                .then(() => {
+                console.log('Finaly written and Done');
+            });
+            if (err) {
+                res.status(400).send({
+                    "error": err
+                });
+            } else {
+                console.log("Ending The process at : " + new Date());
+                res.status(200).send({
+                    "document_id": "OK"
+                });
+            }
         }
     );
-        /*fs.readdirSync(testFolder+"/"+file).forEach(file_child => {
-            console.log("child:-"+file_child);
-            req.params.object_id = "Collection";
-            req.params.file_location = testFolder+"/"+file+"/"+file_child;
-            loadcsv.upload_document(req,res);
-        })*/
-    })
 }
