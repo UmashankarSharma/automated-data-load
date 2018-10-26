@@ -10,7 +10,7 @@ exports.upload_document = function (reqParams, csv_arr,records, callback) {
     async.series([
         function (callback) {
             async.each(csv_arr, function(csv_arr_val, callback1){
-                var record ={};
+                let record ={};
                 record.file_location = reqParams.file_location;
                 callDatabase(csv_arr_val, object_id, function (body) {
                     record.logs = body;
