@@ -5,13 +5,13 @@ var _ = require("underscore");
 var this_file = require('./test.js');
 var separateReqPool = {maxSockets: 10};
 
-exports.upload_document = function (reqParams, csv_arr,records, callback) {
+exports.upload_document = function (reqParams, item, csv_arr,records, callback) {
     const object_id = reqParams.object_id;
     async.series([
         function (callback) {
             async.each(csv_arr, function(csv_arr_val, callback1){
                 let record ={};
-                record.file_location = reqParams.file_location;
+                record.file_location = item;
                 callDatabase(csv_arr_val, object_id, function (body) {
                     record.logs = body;
                     records.push(record);
@@ -45,9 +45,9 @@ function callDatabase(val, object_id, callback) {
     };
 
     request(options, function (error, response, body) {
-        console.log(error)
+        //console.log(error)
         if (error) throw new Error(error);
-        console.log(body);
+        //console.log(body);
         callback(body);
     });
 }
