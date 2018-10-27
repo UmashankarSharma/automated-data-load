@@ -57,19 +57,8 @@ var logger = winston.createLogger({
             filename: logDir+'/info.log',
             handleExceptions: true,
             json: true,
-            maxsize: 5242880, //5MB
-            maxFiles: 5,
-            timestamp:true,
-            colorize: true,
-            tailable:true
-        }),
-        new winston.transports.File({
-            level: 'debug',
-            filename: logDir+'/debug.log',
-            handleExceptions: true,
-            json: true,
-            maxsize: 5242880, //5MB
-            maxFiles: 5,
+            maxsize: 52428800, //50MB
+            maxFiles: 100,
             timestamp:true,
             colorize: true,
             tailable:true

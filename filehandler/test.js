@@ -10,16 +10,15 @@ exports.upload_document = function (reqParams, item, csv_arr,records, callback) 
     const object_id = reqParams.object_id;
     async.series([
         function (callback) {
-            logger.info('A file Processing to data base running for......'+item);
-            callback();
-        },
-        function (callback) {
+            let count = 1;
             async.each(csv_arr, function(csv_arr_val, callback1){
                 let record ={};
                 record.file_location = item;
                 callDatabase(csv_arr_val, object_id, function (body) {
                     record.logs = body;
                     records.push(record);
+                    logger.info('File Currently Processing ('+item+') and Row......'+csv_arr_val+ "total completed process is -->"+count);
+                    count++;
                     callback1();
                 });
             }, function(err) {
