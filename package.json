@@ -9,6 +9,9 @@
       "connectors": {}
     }
   },
+  "scripts": {
+    "start": "forever start --minUptime 1000 --spinSleepTime 1000 --max-old-space-size=16000 server.js"
+  },
   "dependencies": {
     "async": "^2.6.1",
     "body-parser": "^1.18.3",

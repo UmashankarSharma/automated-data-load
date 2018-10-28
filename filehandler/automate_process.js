@@ -34,10 +34,10 @@ exports.automate_data_load =function (req,res) {
         fs.mkdirSync(dirP);
     }
     const file__full_location = inboxFolder+"/"+reqParams.file_location;
-    var records =[];
     logger.info("parent file_location:-"+file__full_location);
     var items = fs.readdirSync(file__full_location);
     async.each(items, function(item, callback){
+        let records =[];
         const csvWriter = createCsvWriter({
             path: path.join(processedFolder,reqParams.file_location,item),
             header: [
